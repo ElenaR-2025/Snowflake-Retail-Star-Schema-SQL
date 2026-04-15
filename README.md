@@ -22,10 +22,6 @@ The schema models a Canadian retail business operating across Online and Retail 
 
 A **star schema** was built in `DEMO_DW.SALES` with two fact tables and five shared dimension tables.
 
-### Schema Diagram
-
-![Data Model](screenshots/schema-diagram.png)
-
 ### Fact Tables
 
 | Table | Description | Key Metrics |
@@ -42,6 +38,20 @@ A **star schema** was built in `DEMO_DW.SALES` with two fact tables and five sha
 | `DIM_PRODUCT` | 100 products | CATEGORY, SUBCATEGORY, UNIT_PRICE, ACTIVE |
 | `DIM_STORE` | 100 stores | REGION, CITY, CHANNEL (Online/Retail) |
 | `DIM_PROMOTION` | 100 promotions | PROMO_TYPE, DISCOUNT_PCT |
+
+### Relationships
+
+```
+FACT_SALES[DATE_KEY]     → DIM_DATE[DATE_KEY]
+FACT_SALES[CUSTOMER_KEY] → DIM_CUSTOMER[CUSTOMER_KEY]
+FACT_SALES[PRODUCT_KEY]  → DIM_PRODUCT[PRODUCT_KEY]
+FACT_SALES[STORE_KEY]    → DIM_STORE[STORE_KEY]
+FACT_SALES[PROMO_KEY]    → DIM_PROMOTION[PROMO_KEY]
+
+FACT_WEB_TRAFFIC[DATE_KEY]    → DIM_DATE[DATE_KEY]
+FACT_WEB_TRAFFIC[STORE_KEY]   → DIM_STORE[STORE_KEY]
+FACT_WEB_TRAFFIC[PRODUCT_KEY] → DIM_PRODUCT[PRODUCT_KEY]
+```
 
 Two reusable views are included: `V_SALES_ENRICHED` and `V_TRAFFIC_ENRICHED`.
 
@@ -100,13 +110,13 @@ WHERE CUSTOMER_KEY IN (
 Query 2.9 identifies which promotion type generates the highest average revenue per order. Query 6.2 shows which type gives away the most in total discount dollars. These two answers are not always the same promotion type — which is exactly the point: high revenue and high discount efficiency are different things.
 
 **2. A meaningful share of customers and products never appear in transactions.**
-The LEFT JOIN queries in Section 3 (queries 3.2 and 3.3) identify customers who never purchased and products that were never sold. In a real dataset this would flag data quality issues or catalog bloat — inactive listings consuming shelf space without generating revenue.
+The LEFT JOIN queries in Section 3 identify customers who never purchased and products that were never sold. In a real dataset this would flag data quality issues or catalog bloat — inactive listings consuming shelf space without generating revenue.
 
 **3. Revenue does not grow steadily — there are identifiable days where it drops.**
-The LAG-based query in Section 6 (query 6.5) detects day-over-day revenue declines. In a real business context this pattern would trigger investigation into promotional timing, inventory gaps, or demand seasonality.
+The LAG-based query in Section 6 detects day-over-day revenue declines. In a real business context this pattern would trigger investigation into promotional timing, inventory gaps, or demand seasonality.
 
 **4. Customer revenue is concentrated — a small group drives disproportionate total.**
-The top-5 customer query (Section 6.1) combined with the window function ranking (Section 5.1) shows both the absolute leaders and each customer's contribution relative to peers — two different views of the same concentration problem.
+The top-5 customer query combined with the window function ranking shows both the absolute leaders and each customer's contribution relative to peers — two different views of the same concentration problem.
 
 ---
 
@@ -141,7 +151,6 @@ This project reinforced that **SQL fluency is not just about syntax — it is ab
 ## File Structure
 
 ```
-├── schema.sql        # Star schema DDL + synthetic data load (Snowflake)
-├── analysis.sql      # 30 business analysis queries across 6 sections
-├── screenshots/      # Snowflake query result screenshots (30 tasks)
+├── schema.sql      # Star schema DDL + synthetic data load (Snowflake)
+├── analysis.sql    # 30 business analysis queries across 6 sections
 └── README.md
